@@ -5,7 +5,6 @@ __pycache__/
 # Django
 *.sqlite3
 media/
-lab1/lab1/settings.py
 
 # Virtualenv
 venv/
