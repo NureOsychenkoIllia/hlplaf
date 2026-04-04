@@ -1,0 +1,27 @@
+{% extends "students/base.html" %}
+{% block title %}Імпорт CSV{% endblock %}
+{% block content %}
+<h2>Імпорт студентів із CSV</h2>
+<div class="row">
+  <div class="col-md-6">
+    <form method="post" enctype="multipart/form-data" class="card p-3">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">{{ form.csv_file.label }}</label>
+        {{ form.csv_file }}
+        {% if form.csv_file.errors %}<div class="text-danger small">{{ form.csv_file.errors }}</div>{% endif %}
+      </div>
+      <button type="submit" class="btn btn-primary">Завантажити</button>
+      <a href="{% url 'student_list' %}" class="btn btn-secondary ms-2">Скасувати</a>
+    </form>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3 bg-light">
+      <h5>Формат CSV</h5>
+      <p class="small">Перший рядок — заголовки. Обов'язкові колонки: <code>full_name</code>, <code>group</code>. Додаткові колонки: <code>phone</code>, <code>email</code>, потім назви предметів.</p>
+      <pre class="small bg-white p-2 rounded">{{ example }}</pre>
+      <a href="{% url 'export_csv' %}" class="btn btn-outline-success btn-sm mt-2">Завантажити поточні дані як CSV</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

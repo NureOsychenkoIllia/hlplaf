@@ -1,0 +1,13 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.student_list, name="student_list"),
+    path("add/", views.student_add, name="student_add"),
+    path("<int:pk>/", views.student_detail, name="student_detail"),
+    path("<int:pk>/edit/", views.student_edit, name="student_edit"),
+    path("<int:pk>/delete/", views.student_delete, name="student_delete"),
+    path("import/", views.import_csv, name="import_csv"),
+    path("report/", views.report, name="report"),
+    path("export/", views.export_csv, name="export_csv"),
+]

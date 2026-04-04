@@ -1,0 +1,67 @@
+{% extends "students/base.html" %}
+{% block title %}Звіт про успішність{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Звіт про успішність</h2>
+  <a href="{% url 'export_csv' %}" class="btn btn-outline-success">Експорт CSV</a>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card p-2">
+      <h5 class="text-center">Середня оцінка за предметами</h5>
+      <img src="data:image/png;base64,{{ chart_subjects }}" class="img-fluid" alt="Графік предметів">
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-2">
+      <h5 class="text-center">Середня оцінка за групами</h5>
+      <img src="data:image/png;base64,{{ chart_groups }}" class="img-fluid" alt="Графік груп">
+    </div>
+  </div>
+</div>
+
+<h4>Статистика за предметами</h4>
+<table class="table table-bordered bg-white mb-4" style="max-width:500px;">
+  <thead><tr><th>Предмет</th><th>Середня</th><th>Кількість оцінок</th></tr></thead>
+  <tbody>
+    {% for s in subjects %}
+    <tr>
+      <td>{{ s.name }}</td>
+      <td>{% if s.avg %}{{ s.avg|floatformat:1 }}{% else %}—{% endif %}</td>
+      <td>{{ s.cnt }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3" class="text-muted">Немає даних.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h4>Зведена таблиця студентів</h4>
+<div class="table-responsive">
+  <table class="table table-bordered table-sm bg-white">
+    <thead>
+      <tr>
+        <th>ПІБ</th>
+        <th>Група</th>
+        {% for subj in all_subjects %}<th>{{ subj.name }}</th>{% endfor %}
+        <th>Середня</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in table_rows %}
+      <tr>
+        <td><a href="{% url 'student_detail' row.student.pk %}">{{ row.student.full_name }}</a></td>
+        <td>{{ row.student.group }}</td>
+        {% for g in row.grades %}
+        <td>{% if g != "—" %}<span class="badge {% if g >= 90 %}bg-success{% elif g >= 75 %}bg-primary{% elif g >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ g }}</span>{% else %}—{% endif %}</td>
+        {% endfor %}
+        <td>{% if row.avg %}<strong>{{ row.avg }}</strong>{% else %}—{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="100" class="text-muted text-center">Немає студентів.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Django
+*.sqlite3
+media/
+lab1/lab1/settings.py
+
+# Virtualenv
+venv/
+
+# Editor
+.ropeproject/
+.zed/

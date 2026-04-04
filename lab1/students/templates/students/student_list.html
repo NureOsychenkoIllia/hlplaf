@@ -1,0 +1,64 @@
+{% extends "students/base.html" %}
+{% block title %}Список студентів{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2>Список студентів</h2>
+  <a href="{% url 'student_add' %}" class="btn btn-success">+ Додати</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input type="text" name="group" class="form-control" placeholder="Фільтр за групою" value="{{ group_filter }}">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-secondary" type="submit">Пошук</button>
+    {% if group_filter %}<a href="{% url 'student_list' %}" class="btn btn-link">Скинути</a>{% endif %}
+  </div>
+</form>
+
+<div class="table-responsive">
+  <table class="table table-bordered table-hover bg-white">
+    <thead>
+      <tr>
+        <th>ПІБ</th>
+        <th>Група</th>
+        {% for subj in subjects %}<th>{{ subj.name }}</th>{% endfor %}
+        <th>Середня</th>
+        <th>Дії</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+      <tr>
+        <td><a href="{% url 'student_detail' student.pk %}">{{ student.full_name }}</a></td>
+        <td>{{ student.group }}</td>
+        {% for subj in subjects %}
+          {% with grade=None %}
+          <td>
+            {% for g in student.grades.all %}
+              {% if g.subject_id == subj.pk %}{{ g.value }}{% endif %}
+            {% endfor %}
+          </td>
+          {% endwith %}
+        {% endfor %}
+        <td>
+          {% with avg=student.average_grade %}
+            {% if avg %}
+              <span class="badge {% if avg >= 90 %}bg-success{% elif avg >= 75 %}bg-primary{% elif avg >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                {{ avg }}
+              </span>
+            {% else %}—{% endif %}
+          {% endwith %}
+        </td>
+        <td>
+          <a href="{% url 'student_edit' student.pk %}" class="btn btn-sm btn-warning">Ред.</a>
+          <a href="{% url 'student_delete' student.pk %}" class="btn btn-sm btn-danger">Вид.</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="100" class="text-center text-muted">Студентів не знайдено.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
