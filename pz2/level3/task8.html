@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Бібліотека книг</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 20px auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #f0f0f0; }
+    .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; margin: 1px; cursor: pointer; }
+    .tag.favorite { background: #ffd700; }
+    .tag.read { background: #90ee90; }
+    .tag.wishlist { background: #add8e6; }
+    .tag.active { outline: 2px solid #333; }
+    .del { color: red; cursor: pointer; border: none; background: none; font-size: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Бібліотека книг</h1>
+
+  <form id="addForm">
+    <input type="text" id="title" placeholder="Назва книги" required>
+    <input type="text" id="author" placeholder="Автор" required>
+    <button type="submit">Додати</button>
+  </form>
+
+  <br>
+  <table>
+    <thead>
+      <tr>
+        <th>Назва</th>
+        <th>Автор</th>
+        <th>Помітки</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+  <script>
+    const TAGS = ["favorite", "read", "wishlist"];
+    const TAG_LABELS = { favorite: "⭐ Вибране", read: "✅ Прочитано", wishlist: "🔖 Бажане" };
+    const STORAGE_KEY = "library_books";
+
+    let books = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+    }
+
+    function render() {
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = "";
+
+      books.forEach((book, i) => {
+        const tr = document.createElement("tr");
+
+        const tdTitle = document.createElement("td");
+        tdTitle.textContent = book.title;
+
+        const tdAuthor = document.createElement("td");
+        tdAuthor.textContent = book.author;
+
+        const tdTags = document.createElement("td");
+        TAGS.forEach(tag => {
+          const span = document.createElement("span");
+          span.className = `tag ${tag}${book.tags.includes(tag) ? " active" : ""}`;
+          span.textContent = TAG_LABELS[tag];
+          span.onclick = () => toggleTag(i, tag);
+          tdTags.appendChild(span);
+        });
+
+        const tdDel = document.createElement("td");
+        const btn = document.createElement("button");
+        btn.className = "del";
+        btn.textContent = "✕";
+        btn.onclick = () => deleteBook(i);
+        tdDel.appendChild(btn);
+
+        tr.appendChild(tdTitle);
+        tr.appendChild(tdAuthor);
+        tr.appendChild(tdTags);
+        tr.appendChild(tdDel);
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleTag(index, tag) {
+      const book = books[index];
+      const pos = book.tags.indexOf(tag);
+      if (pos === -1) {
+        book.tags.push(tag);
+      } else {
+        book.tags.splice(pos, 1);
+      }
+      save();
+      render();
+    }
+
+    function deleteBook(index) {
+      books.splice(index, 1);
+      save();
+      render();
+    }
+
+    document.getElementById("addForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const title = document.getElementById("title").value.trim();
+      const author = document.getElementById("author").value.trim();
+      if (!title || !author) return;
+      books.push({ title, author, tags: [] });
+      save();
+      render();
+      e.target.reset();
+    });
+
+    // Ініціалізація демо-даних при першому запуску
+    if (books.length === 0) {
+      books = [
+        { title: "Кобзар", author: "Тарас Шевченко", tags: ["favorite", "read"] },
+        { title: "1984", author: "Джордж Орвелл", tags: ["read"] },
+        { title: "Дюна", author: "Френк Герберт", tags: ["wishlist"] }
+      ];
+      save();
+    }
+
+    render();
+  </script>
+</body>
+</html>

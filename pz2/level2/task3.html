@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Генератор JSON</title>
+</head>
+<body>
+  <h1>Генератор JSON</h1>
+
+  <form id="form">
+    <label>Ім'я: <input type="text" id="name" value="Іван"></label><br><br>
+    <label>Вік: <input type="number" id="age" value="20"></label><br><br>
+    <label>Місто: <input type="text" id="city" value="Харків"></label><br><br>
+    <label>Хобі (через кому): <input type="text" id="hobbies" value="читання,спорт"></label><br><br>
+    <button type="button" onclick="generate()">Згенерувати JSON</button>
+    <button type="button" id="downloadBtn" style="display:none" onclick="download()">Завантажити файл</button>
+  </form>
+
+  <h2>Результат:</h2>
+  <pre id="output"></pre>
+
+  <script>
+    let generatedJson = "";
+
+    function generate() {
+      const obj = {
+        name: document.getElementById("name").value,
+        age: parseInt(document.getElementById("age").value),
+        city: document.getElementById("city").value,
+        hobbies: document.getElementById("hobbies").value
+          .split(",")
+          .map(h => h.trim())
+          .filter(h => h.length > 0)
+      };
+
+      generatedJson = JSON.stringify(obj, null, 2);
+      document.getElementById("output").textContent = generatedJson;
+      document.getElementById("downloadBtn").style.display = "inline";
+    }
+
+    function download() {
+      const blob = new Blob([generatedJson], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "data.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+  </script>
+</body>
+</html>

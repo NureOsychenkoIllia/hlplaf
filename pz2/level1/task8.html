@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Погода з іконкою</title>
+</head>
+<body>
+  <h1>Прогноз погоди</h1>
+  <div id="weather">Завантаження...</div>
+
+  <script>
+    const WMO_CODES = {
+      0: { desc: "Ясно", icon: "☀️" },
+      1: { desc: "Переважно ясно", icon: "🌤️" },
+      2: { desc: "Мінлива хмарність", icon: "⛅" },
+      3: { desc: "Похмуро", icon: "☁️" },
+      45: { desc: "Туман", icon: "🌫️" },
+      48: { desc: "Іній", icon: "🌫️" },
+      51: { desc: "Легка мряка", icon: "🌦️" },
+      53: { desc: "Помірна мряка", icon: "🌦️" },
+      55: { desc: "Щільна мряка", icon: "🌧️" },
+      61: { desc: "Невеликий дощ", icon: "🌧️" },
+      63: { desc: "Помірний дощ", icon: "🌧️" },
+      65: { desc: "Сильний дощ", icon: "🌧️" },
+      71: { desc: "Невеликий сніг", icon: "🌨️" },
+      73: { desc: "Помірний сніг", icon: "❄️" },
+      75: { desc: "Сильний сніг", icon: "❄️" },
+      80: { desc: "Зливи", icon: "⛈️" },
+      95: { desc: "Гроза", icon: "⛈️" },
+    };
+
+    // Координати Харкова
+    const lat = 49.9935;
+    const lon = 36.2304;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        const cw = data.current_weather;
+        const code = cw.weathercode;
+        const weather = WMO_CODES[code] || { desc: "Невідомо", icon: "❓" };
+
+        const container = document.getElementById("weather");
+        container.innerHTML = "";
+
+        const iconEl = document.createElement("p");
+        iconEl.style.fontSize = "4rem";
+        iconEl.textContent = weather.icon;
+
+        const tempEl = document.createElement("p");
+        tempEl.textContent = `Температура: ${cw.temperature} °C`;
+
+        const descEl = document.createElement("p");
+        descEl.textContent = `Стан: ${weather.desc}`;
+
+        const windEl = document.createElement("p");
+        windEl.textContent = `Вітер: ${cw.windspeed} км/год`;
+
+        container.appendChild(iconEl);
+        container.appendChild(tempEl);
+        container.appendChild(descEl);
+        container.appendChild(windEl);
+      })
+      .catch(() => {
+        document.getElementById("weather").textContent = "Помилка завантаження даних.";
+      })
+      .finally(() => {
+        console.log("Запит завершено");
+      });
+  </script>
+</body>
+</html>

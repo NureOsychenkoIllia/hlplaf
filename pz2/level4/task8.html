@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Бібліотека книг — розширена</title>
+  <style>
+    body { font-family: sans-serif; max-width: 750px; margin: 20px auto; }
+    nav { display: flex; gap: 10px; margin-bottom: 20px; }
+    nav button { padding: 6px 14px; cursor: pointer; }
+    nav button.active { font-weight: bold; border-bottom: 2px solid #333; }
+    section { display: none; }
+    section.active { display: block; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #f0f0f0; }
+    .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 0.8em; margin: 1px; cursor: pointer; }
+    .tag.favorite { background: #ffd700; }
+    .tag.read { background: #90ee90; }
+    .tag.wishlist { background: #add8e6; }
+    .tag.active { outline: 2px solid #333; }
+    .del { color: red; cursor: pointer; border: none; background: none; font-size: 1em; }
+    form label { display: block; margin: 8px 0 2px; }
+    form input, form select, form textarea { width: 100%; padding: 6px; box-sizing: border-box; }
+    form button[type=submit] { margin-top: 12px; padding: 8px 20px; }
+    .msg { color: green; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Бібліотека книг</h1>
+
+  <nav>
+    <button class="active" onclick="switchTab('list', this)">Список книг</button>
+    <button onclick="switchTab('add', this)">Додати книгу</button>
+  </nav>
+
+  <!-- Компонент: список -->
+  <section id="list" class="active">
+    <table>
+      <thead>
+        <tr>
+          <th>Назва</th>
+          <th>Автор</th>
+          <th>Рік</th>
+          <th>Жанр</th>
+          <th>Помітки</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- Компонент: форма додавання -->
+  <section id="add">
+    <h2>Нова книга</h2>
+    <form id="addForm">
+      <label>Назва книги *
+        <input type="text" id="f-title" required>
+      </label>
+      <label>Автор *
+        <input type="text" id="f-author" required>
+      </label>
+      <label>Рік видання
+        <input type="number" id="f-year" min="1" max="2099" placeholder="наприклад, 1984">
+      </label>
+      <label>Жанр
+        <select id="f-genre">
+          <option value="">— оберіть —</option>
+          <option>Роман</option>
+          <option>Фантастика</option>
+          <option>Детектив</option>
+          <option>Поезія</option>
+          <option>Наука</option>
+          <option>Інше</option>
+        </select>
+      </label>
+      <label>Помітки
+        <div>
+          <label><input type="checkbox" name="tag" value="favorite"> ⭐ Вибране</label>
+          <label><input type="checkbox" name="tag" value="read"> ✅ Прочитано</label>
+          <label><input type="checkbox" name="tag" value="wishlist"> 🔖 Бажане</label>
+        </div>
+      </label>
+      <button type="submit">Зберегти</button>
+    </form>
+    <p class="msg" id="msg" style="display:none">Книгу додано!</p>
+  </section>
+
+  <script>
+    const TAGS = ["favorite", "read", "wishlist"];
+    const TAG_LABELS = { favorite: "⭐ Вибране", read: "✅ Прочитано", wishlist: "🔖 Бажане" };
+    const STORAGE_KEY = "library_books_v2";
+
+    let books = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(books));
+    }
+
+    function switchTab(id, btn) {
+      document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+      btn.classList.add("active");
+    }
+
+    function render() {
+      const tbody = document.getElementById("tbody");
+      tbody.innerHTML = "";
+      books.forEach((book, i) => {
+        const tr = document.createElement("tr");
+
+        [book.title, book.author, book.year || "—", book.genre || "—"].forEach(val => {
+          const td = document.createElement("td");
+          td.textContent = val;
+          tr.appendChild(td);
+        });
+
+        const tdTags = document.createElement("td");
+        TAGS.forEach(tag => {
+          const span = document.createElement("span");
+          span.className = `tag ${tag}${book.tags.includes(tag) ? " active" : ""}`;
+          span.textContent = TAG_LABELS[tag];
+          span.onclick = () => { toggleTag(i, tag); };
+          tdTags.appendChild(span);
+        });
+        tr.appendChild(tdTags);
+
+        const tdDel = document.createElement("td");
+        const btn = document.createElement("button");
+        btn.className = "del";
+        btn.textContent = "✕";
+        btn.onclick = () => { deleteBook(i); };
+        tdDel.appendChild(btn);
+        tr.appendChild(tdDel);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleTag(index, tag) {
+      const pos = books[index].tags.indexOf(tag);
+      if (pos === -1) books[index].tags.push(tag);
+      else books[index].tags.splice(pos, 1);
+      save();
+      render();
+    }
+
+    function deleteBook(index) {
+      books.splice(index, 1);
+      save();
+      render();
+    }
+
+    document.getElementById("addForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const title = document.getElementById("f-title").value.trim();
+      const author = document.getElementById("f-author").value.trim();
+      const year = document.getElementById("f-year").value;
+      const genre = document.getElementById("f-genre").value;
+      const tags = [...document.querySelectorAll("input[name=tag]:checked")].map(cb => cb.value);
+
+      books.push({ title, author, year: year ? parseInt(year) : "", genre, tags });
+      save();
+      render();
+      e.target.reset();
+
+      const msg = document.getElementById("msg");
+      msg.style.display = "block";
+      setTimeout(() => { msg.style.display = "none"; }, 2000);
+    });
+
+    // Демо-дані
+    if (books.length === 0) {
+      books = [
+        { title: "Кобзар", author: "Тарас Шевченко", year: 1840, genre: "Поезія", tags: ["favorite", "read"] },
+        { title: "1984", author: "Джордж Орвелл", year: 1949, genre: "Роман", tags: ["read"] },
+        { title: "Дюна", author: "Френк Герберт", year: 1965, genre: "Фантастика", tags: ["wishlist"] }
+      ];
+      save();
+    }
+
+    render();
+  </script>
+</body>
+</html>
