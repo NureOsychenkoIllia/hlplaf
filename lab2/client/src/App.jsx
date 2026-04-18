@@ -12,6 +12,7 @@ function Layout() {
   const { user, logout } = useAuth();
 
   return (
+    <PlayerProvider userId={user?.id}>
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <nav style={{
         display: 'flex', alignItems: 'center', gap: 6,
@@ -55,6 +56,7 @@ function Layout() {
 
       <Player />
     </div>
+    </PlayerProvider>
   );
 }
 
@@ -69,11 +71,9 @@ const navStyle = ({ isActive }) => ({
 export default function App() {
   return (
     <AuthProvider>
-      <PlayerProvider>
-        <BrowserRouter>
-          <Layout />
-        </BrowserRouter>
-      </PlayerProvider>
+      <BrowserRouter>
+        <Layout />
+      </BrowserRouter>
     </AuthProvider>
   );
 }

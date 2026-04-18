@@ -2,7 +2,13 @@ import { createContext, useContext, useState } from 'react';
 
 const PlayerContext = createContext(null);
 
-export function PlayerProvider({ children }) {
+const postEvent = (trackId, event, userId) =>
+  fetch(`/api/tracks/${trackId}/${event}`, {
+    method: 'POST',
+    headers: userId ? { 'x-user-id': userId } : {},
+  }).catch(() => {});
+
+export function PlayerProvider({ userId, children }) {
   const [queue, setQueue]     = useState([]);
   const [currentIdx, setIdx]  = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -13,7 +19,7 @@ export function PlayerProvider({ children }) {
     setQueue(tracks);
     setIdx(idx);
     setPlaying(true);
-    if (tracks[idx]) fetch(`/api/tracks/${tracks[idx].id}/play`, { method: 'POST' }).catch(() => {});
+    if (tracks[idx]) postEvent(tracks[idx].id, 'play', userId);
   };
 
   const playTrack = (track) => play([track], 0);
@@ -22,15 +28,15 @@ export function PlayerProvider({ children }) {
     if (currentIdx < queue.length - 1) {
       const ni = currentIdx + 1;
       setIdx(ni);
-      fetch(`/api/tracks/${queue[ni].id}/play`, { method: 'POST' }).catch(() => {});
+      postEvent(queue[ni].id, 'play', userId);
     }
   };
 
-  const prev = () => { if (currentIdx > 0) setIdx(i => i - 1); };
+  const prev   = () => { if (currentIdx > 0) setIdx(i => i - 1); };
   const toggle = () => setPlaying(p => !p);
 
   return (
-    <PlayerContext.Provider value={{ current, queue, currentIdx, playing, play, playTrack, next, prev, toggle }}>
+    <PlayerContext.Provider value={{ current, queue, currentIdx, playing, play, playTrack, next, prev, toggle, userId }}>
       {children}
     </PlayerContext.Provider>
   );

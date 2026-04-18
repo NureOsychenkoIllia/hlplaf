@@ -7,7 +7,7 @@ function fmt(s) {
 }
 
 export default function Player() {
-  const { current, playing, toggle, next, prev, queue, currentIdx } = usePlayer();
+  const { current, playing, toggle, next, prev, queue, currentIdx, userId } = usePlayer();
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -68,7 +68,10 @@ export default function Player() {
       <a
         href={current.url}
         download={`${current.title}.mp3`}
-        onClick={() => fetch(`/api/tracks/${current.id}/download`, { method: 'POST' }).catch(() => {})}
+        onClick={() => fetch(`/api/tracks/${current.id}/download`, {
+          method: 'POST',
+          headers: userId ? { 'x-user-id': userId } : {},
+        }).catch(() => {})}
         style={{ textDecoration: 'none' }}
       >
         <button style={{ background: 'var(--surface2)', color: 'var(--text-dim)', fontSize: 12 }}>
